@@ -347,12 +347,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
             serializer.Serialize(writer, requiredAttribute.Diagnostics);
         }
 
-        if (requiredAttribute.Metadata != null && requiredAttribute.Metadata.Count > 0)
-        {
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
-            WriteMetadata(writer, requiredAttribute.Metadata);
-        }
-
         writer.WriteEndObject();
     }
 
@@ -646,8 +640,8 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
                         }
                         break;
                     case nameof(RequiredAttributeDescriptor.NameComparison):
-                        var nameComparison = (RequiredAttributeDescriptor.NameComparisonMode)reader.ReadAsInt32();
-                        attribute.NameComparisonMode = nameComparison;
+                        var nameComparison = (RequiredAttributeNameComparison)reader.ReadAsInt32();
+                        attribute.NameComparison = nameComparison;
                         break;
                     case nameof(RequiredAttributeDescriptor.Value):
                         if (reader.Read())
@@ -657,14 +651,11 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
                         }
                         break;
                     case nameof(RequiredAttributeDescriptor.ValueComparison):
-                        var valueComparison = (RequiredAttributeDescriptor.ValueComparisonMode)reader.ReadAsInt32();
-                        attribute.ValueComparisonMode = valueComparison;
+                        var valueComparison = (RequiredAttributeValueComparison)reader.ReadAsInt32();
+                        attribute.ValueComparison = valueComparison;
                         break;
                     case nameof(RequiredAttributeDescriptor.Diagnostics):
                         ReadDiagnostics(reader, attribute.Diagnostics);
-                        break;
-                    case nameof(RequiredAttributeDescriptor.Metadata):
-                        ReadMetadata(reader, attribute.Metadata);
                         break;
                 }
             });
