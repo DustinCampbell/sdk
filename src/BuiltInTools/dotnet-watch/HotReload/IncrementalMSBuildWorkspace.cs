@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Watch;
 internal class IncrementalMSBuildWorkspace : Workspace
 {
     private readonly IReporter _reporter;
+    private readonly MSBuildProjectLoader _projectLoader;
 
     public IncrementalMSBuildWorkspace(IReporter reporter)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
@@ -28,19 +29,19 @@ internal class IncrementalMSBuildWorkspace : Workspace
         };
 
         _reporter = reporter;
+
+        _projectLoader = new MSBuildProjectLoader(this);
     }
 
     public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
     {
         var oldSolution = CurrentSolution;
-
-        var loader = new MSBuildProjectLoader(this);
-        var projectMap = ProjectMap.Create();
+        var projectMap = ProjectMap.Create(oldSolution);
 
         ImmutableArray<ProjectInfo> projectInfos;
         try
         {
-            projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+            projectInfos = await _projectLoader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException)
         {
@@ -48,68 +49,22 @@ internal class IncrementalMSBuildWorkspace : Workspace
             projectInfos = [];
         }
 
-        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => (p.FilePath!, p.Name), elementSelector: static p => p.Id);
-
-        // Map new project id to the corresponding old one based on file path and project name (includes TFM), if it exists, and null for added projects.
-        // Deleted projects won't be included in this map.
-        var projectIdMap = projectInfos.ToDictionary(
-            keySelector: static info => info.Id,
-            elementSelector: info => oldProjectIdsByPath.TryGetValue((info.FilePath!, info.Name), out var oldProjectId) ? oldProjectId : null);
-
+        var oldProjectIds = oldSolution.ProjectIds.ToHashSet();
         var newSolution = oldSolution;
 
-        foreach (var newProjectInfo in projectInfos)
+        foreach (var projectInfo in projectInfos)
         {
-            Debug.Assert(newProjectInfo.FilePath != null);
-
-            var oldProjectId = projectIdMap[newProjectInfo.Id];
-            if (oldProjectId == null)
+            if (!oldProjectIds.Contains(projectInfo.Id))
             {
-                newSolution = newSolution.AddProject(newProjectInfo);
+                newSolution = newSolution.AddProject(projectInfo);
                 continue;
             }
 
-            newSolution = WatchHotReloadService.WithProjectInfo(newSolution, ProjectInfo.Create(
-                oldProjectId,
-                newProjectInfo.Version,
-                newProjectInfo.Name,
-                newProjectInfo.AssemblyName,
-                newProjectInfo.Language,
-                newProjectInfo.FilePath,
-                newProjectInfo.OutputFilePath,
-                newProjectInfo.CompilationOptions,
-                newProjectInfo.ParseOptions,
-                MapDocuments(oldProjectId, newProjectInfo.Documents),
-                newProjectInfo.ProjectReferences.Select(MapProjectReference),
-                newProjectInfo.MetadataReferences,
-                newProjectInfo.AnalyzerReferences,
-                MapDocuments(oldProjectId, newProjectInfo.AdditionalDocuments),
-                isSubmission: false,
-                hostObjectType: null,
-                outputRefFilePath: newProjectInfo.OutputRefFilePath)
-                .WithAnalyzerConfigDocuments(MapDocuments(oldProjectId, newProjectInfo.AnalyzerConfigDocuments))
-                .WithCompilationOutputInfo(newProjectInfo.CompilationOutputInfo));
+            newSolution = WatchHotReloadService.WithProjectInfo(newSolution, projectInfo);
         }
 
         await ReportSolutionFilesAsync(SetCurrentSolution(newSolution), cancellationToken);
         UpdateReferencesAfterAdd();
-
-        ProjectReference MapProjectReference(ProjectReference pr)
-            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing:
-            => new(projectIdMap.TryGetValue(pr.ProjectId, out var mappedId) ? mappedId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
-
-        ImmutableArray<DocumentInfo> MapDocuments(ProjectId mappedProjectId, IReadOnlyList<DocumentInfo> documents)
-            => documents.Select(docInfo =>
-            {
-                // TODO: can there be multiple documents of the same path in the project?
-
-                // Map to a document of the same path. If there isn't one (a new document is added to the project),
-                // create a new document id with the mapped project id.
-                var mappedDocumentId = oldSolution.GetDocumentIdsWithFilePath(docInfo.FilePath).FirstOrDefault(id => id.ProjectId == mappedProjectId)
-                    ?? DocumentId.CreateNewId(mappedProjectId);
-
-                return docInfo.WithId(mappedDocumentId);
-            }).ToImmutableArray();
     }
 
     public async ValueTask UpdateFileContentAsync(IEnumerable<ChangedFile> changedFiles, CancellationToken cancellationToken)
