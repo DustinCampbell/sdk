@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
@@ -12,6 +12,7 @@
     <RootNamespace>Microsoft.DotNet.Watch</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <UseAppHost>false</UseAppHost>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RuntimeIdentifier />
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
@@ -41,13 +42,27 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Collections" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PooledObjects" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Threading" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
-
+  
+  <!-- Display files included by the Microsoft.CodeAnalysis.* source packages in separate folders -->
+  <ItemGroup>
+    <Compile Update="@(Compile)">
+      <Link Condition="'%(NuGetPackageId)' == 'Microsoft.CodeAnalysis.Collections'">Collections\%(Link)</Link>
+      <Link Condition="'%(NuGetPackageId)' == 'Microsoft.CodeAnalysis.Contracts'">Contracts\%(Link)</Link>
+      <Link Condition="'%(NuGetPackageId)' == 'Microsoft.CodeAnalysis.PooledObjects'">PooledObjects\%(Link)</Link>
+      <Link Condition="'%(NuGetPackageId)' == 'Microsoft.CodeAnalysis.Threading'">Threading\%(Link)</Link>
+    </Compile>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
 

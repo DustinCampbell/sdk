@@ -21,6 +21,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BuildClient" Version="$(MicrosoftCodeAnalysisBuildClientVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Collections" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Contracts" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
@@ -28,8 +29,10 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.PooledObjects" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="$(MicrosoftCodeAnalysisRazorToolingInternalVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Threading" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
