@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
@@ -31,6 +31,9 @@
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
+    <EmbeddedResource Update="HotReload\BuildHost\WorkspaceMSBuildBuildHostResources.resx"
+                      Namespace="Microsoft.CodeAnalysis.MSBuild" />
+
     <Content Include="Watch\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
